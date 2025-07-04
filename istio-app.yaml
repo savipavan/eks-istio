@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-app
+  labels:
+    istio-injection: enabled
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-app
+  namespace: istio-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: istio-app
+  template:
+    metadata:
+      labels:
+        app: istio-app
+    spec:
+      nodeSelector:
+        alpha.eksctl.io/nodegroup-name: application
+      containers:
+        - name: app
+          image: hashicorp/http-echo
+          args:
+            - "-text=Hello from Istio"
+          ports:
+            - containerPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-app
+  namespace: istio-app
+spec:
+  selector:
+    app: istio-app
+  ports:
+    - port: 80
+      targetPort: 5678
